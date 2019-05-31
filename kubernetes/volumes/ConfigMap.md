@@ -441,6 +441,76 @@ nginx-config中的key键nginx_port、server_name被当作文件名，注入到�
         /etc/nginx/config.d # cat port
         8088/etc/nginx/config.d # 
         进入pod中查看，只有一个文件port，文件内容为nginx-config资源中的nginx_port（key）键的值（value）。
+ 
+#### 以键值对作为虚拟主机文件，注入键值对到pods中。 
+
+比如在实际应用中，
+可以将path：指定为www.XXX.com.conf某虚拟机主的配置文件名，
+而key指定为是这个虚拟主机的时间配置文件内容，而挂载点是默认的/etc/nginx/conf.d/，启动的pod时，直接一个虚拟主机就创建成功了。
+
+示例，直接将nginx-www的键值对，作为虚拟主机，注入到pod中。
+ 
+        [root@docker1:~/mainfests/configmap ]# vim pod-configmap-3-portion.yaml.yaml
+        apiVersion: v1
+        kind: Pod
+        metadata:
+           name: pod-cm-3-portion
+           namespace: default
+           labels:
+             app: myapp
+             tier: frontend
+           annotations:
+             magedu.com/created-by: "cluster admin"
+        spec:
+           containers:
+           - name: myapp
+             image: ikubernetes/myapp:v1
+             volumeMounts:
+               - name: nginxconf
+                 mountPath: /etc/nginx/conf.d/
+           volumes:
+           - name: nginxconf
+             configMap:
+                name: nginx-www                   #使用的具体的configmap类型nginx-www资源
+                items:                            #items支持部分导入键值对
+                  - key: www.conf                 #使用的key
+                    path: myapp.magedu.com.conf   #注入的文件名，就是虚拟主机配置文件，直接可以使用。
+        ~                                                                                                               
+        "pod-configmap-3-portion.yaml.yaml" 24L, 498C written                                         
+        [root@docker1:~/mainfests/configmap ]# 
+        [root@docker1:~/mainfests/configmap ]# 
+        [root@docker1:~/mainfests/configmap ]# kubectl  apply -f pod-configmap-3-portion.yaml.yaml 
+        pod/pod-cm-3-portion created
+        [root@docker1:~/mainfests/configmap ]# kubectl  get pods
+        NAME                             READY   STATUS    RESTARTS   AGE
+        myapp-deploy-6b56d98b6b-2fzxd    1/1     Running   0          29h
+        myapp-deploy-6b56d98b6b-fd7ps    1/1     Running   0          29h
+        myapp-deploy-6b56d98b6b-wcwd2    1/1     Running   0          29h
+        pod-cm-3                         1/1     Running   0          92m
+        pod-cm-3-portion                 1/1     Running   0          2s
+        pod-vol-pvc                      1/1     Running   0          28h
+        tomcat-deploy-8475677b49-9k776   1/1     Running   0          29h
+        tomcat-deploy-8475677b49-gvb9c   1/1     Running   0          29h
+        tomcat-deploy-8475677b49-p7fd4   1/1     Running   1          2d1h
         
+        进入pod中，查看注入的虚拟主机配置文件myapp.magedu.com.conf。
+        [root@docker1:~/mainfests/configmap ]# kubectl  exec -it pod-cm-3-portion -- /bin/sh
+        / # cd /etc/nginx/
+        /etc/nginx # ls
+        conf.d                  koi-utf                 nginx.conf              uwsgi_params.default
+        fastcgi.conf            koi-win                 nginx.conf.default      win-utf
+        fastcgi.conf.default    mime.types              scgi_params
+        fastcgi_params          mime.types.default      scgi_params.default
+        fastcgi_params.default  modules                 uwsgi_params
+        /etc/nginx # cd conf.d/
+        /etc/nginx/conf.d # ls
+        myapp.magedu.com.conf
+        /etc/nginx/conf.d # cat myapp.magedu.com.conf 
+        server {
+            server_name myapp.magedu.com;
+            listen 8099;
+            root /data/web/html/;
+        }
+        /etc/nginx/conf.d #
 
-
+实现了直接将cm/nginx-www资源中的键值对，注入到pod中，生成虚拟主机配置文件。

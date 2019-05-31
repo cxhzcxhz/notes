@@ -446,7 +446,7 @@ nginx-config中的key键nginx_port、server_name被当作文件名，注入到�
 
 比如在实际应用中，
 可以将path：指定为www.XXX.com.conf某虚拟机主的配置文件名，
-而key指定为是这个虚拟主机的时间配置文件内容，而挂载点是默认的/etc/nginx/conf.d/，启动的pod时，直接一个虚拟主机就创建成功了。
+而key指定为是这个虚拟主机的配置文件(path是在pod中显示的文件名，key是在cm类型的nginx-www资源中的key，其实是同一种使命，引用key对应的值。)，而挂载点是默认的/etc/nginx/conf.d/，启动的pod时，直接一个虚拟主机就创建成功了。
 
 示例，直接将nginx-www的键值对，作为虚拟主机，注入到pod中。
  

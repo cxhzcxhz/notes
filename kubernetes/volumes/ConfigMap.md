@@ -81,6 +81,50 @@ ConfigMap相当于一些列配置文件的集合，可以注入到pod的容器�
 通过上述的详细信息，可以看到创建的键值对，
     
     key为www.conf，value为www.conf文件内容。
-    
      
-    
+##### 示例，创建一主进程为nginx的镜像(ikubernetes/myapp:v1)启动的pod，通过env方式将上述nginx-config资源定义的key和value，注入到pod的容器的配置文件中。
+
+创建pod配置文件示例：
+
+        [root@docker1:~/mainfests/configmap ]# cat pod-configmap.yaml 
+        apiVersion: v1
+        kind: Pod                                           #创建一个pod
+        metadata:
+           name: pod-cm-1
+           namespace: default
+           labels:
+             app: myapp
+             tier: frontend
+           annotations:
+             magedu.com/created-by: "cluster admin"
+        spec:
+           containers:
+           - name: myapp
+             image: ikubernetes/myapp:v1
+             env:                                           #使用env方式注入变量
+               - name: NGINX_SERVER_PORT                    #注入的变量名
+                 valueFrom:                                 #环境变量的值来源与，下面引用的  \
+                   configMapKeyRef:                         #configmap中定义的值
+                         name: nginx-config                 #引用名为nginx-config中的键值对
+                         key: nginx_port                    #引用的key为nginx_port的value
+               - name: NGINX_SERVER_NAME
+                 valueFrom:
+                   configMapKeyRef:
+                        name: nginx-config
+                        key: server_name
+
+创建并查看容器中，是否有我们注入的变量及值：
+        
+        [root@docker1:~/mainfests/configmap ]# kubectl  apply -f pod-configmap.yaml 
+        pod/pod-cm-1 created
+        
+        [root@docker1:~ ]# kubectl  exec -it pod-cm-1 -- printenv
+        PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        HOSTNAME=pod-cm-1
+        TERM=xterm
+        NGINX_SERVER_NAME=myapp.magedu.com
+        NGINX_SERVER_PORT=80
+        MYAPP_PORT_80_TCP=tcp://10.107.183.224:80
+
+        
+

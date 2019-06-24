@@ -151,7 +151,7 @@
 			rewrite_by_lua_block {
 				lua_ingress.rewrite({
 					force_ssl_redirect = false,
---
+			--
   			proxy_buffer_size                       4k;
 			proxy_buffers                           4 4k;
 			proxy_request_buffering                 on;
@@ -320,7 +320,7 @@ ingress-tomcat配置文件：
 		}
 		
 		location / {
---
+			--
 			proxy_buffer_size                       4k;
 			proxy_buffers                           4 4k;
 			proxy_request_buffering                 on;
@@ -406,6 +406,33 @@ ingress-tomcat配置文件：
 		    serviceName: tomcat   #还是使用先前的service类型资源tomcat，通过tomcat匹配后端的pods。
 		    servicePort: 8080
 
+查看nginx ingress controllor pods中，是否有ingress-tomcat-tls注入的主机名为“tomcat.magedu.com”虚拟主机，是否监听在443端口，命令：
+
+	[root@docker1:~/mainfests/ingress ]# kubectl  exec -ti nginx-ingress-controller-689498bc7c-rqfxj  -n ingress-nginx --  /bin/sh
+	$ cat nginx.conf
+	## start server tomcat.magedu.com
+	server {
+		server_name tomcat.magedu.com ;
+		
+		listen 80;                 #监听80端口
+		
+		set $proxy_upstream_name "-";
+		set $pass_access_scheme $scheme;
+		set $pass_server_port $server_port;
+		set $best_http_host $http_host;
+		set $pass_port $pass_server_port;
+		
+		listen 443  ssl http2;     #监听443端口
+		
+		# PEM sha: be786d72a213ca0259b8617b02fa78a82a0a03fc
+		ssl_certificate                         /etc/ingress-controller/ssl/default-fake-certificate.pem;
+		ssl_certificate_key                     /etc/ingress-controller/ssl/default-fake-certificate.pem;
+		
+		ssl_certificate_by_lua_block {
+			certificate.call()
+		}
+
+结果显示在nginx ingress controller中已经监听了443端口。
 
 集群外部访问测试，命令为：https://tomcat.magedu.com:30443/
 

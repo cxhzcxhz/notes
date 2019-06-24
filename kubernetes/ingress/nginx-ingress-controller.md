@@ -24,3 +24,61 @@
         [root@docker1:~ ]# kubectl  get pods -n ingress-nginx
         NAME                                        READY   STATUS    RESTARTS   AGE
         nginx-ingress-controller-689498bc7c-rqfxj   1/1     Running   0          146m
+查看pods的详细信息，命令；
+        
+        [root@docker1:~/mainfests/ingress ]# kubectl  describe pods/nginx-ingress-controller-689498bc7c-rqfxj  -n ingress-nginx
+        Name:               nginx-ingress-controller-689498bc7c-rqfxj
+        Namespace:          ingress-nginx
+        Priority:           0
+        PriorityClassName:  <none>
+        Node:               docker2/192.168.12.174
+        Start Time:         Mon, 24 Jun 2019 14:14:46 +0800
+        Labels:             app.kubernetes.io/name=ingress-nginx
+                            app.kubernetes.io/part-of=ingress-nginx
+                            pod-template-hash=689498bc7c
+        Annotations:        prometheus.io/port: 10254
+                            prometheus.io/scrape: true
+        Status:             Running
+        IP:                 10.244.1.125
+        Controlled By:      ReplicaSet/nginx-ingress-controller-689498bc7c
+        Containers:
+          nginx-ingress-controller:
+            Container ID:  docker://36e75d5898809494be9c4c5033c6f1b11968b138216e73b5c717cf2ac4912d58
+            Image:         quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.24.1
+            Image ID:      docker-pullable://quay.io/kubernetes-ingress-controller/nginx-ingress-controller@sha256:76861d167e4e3db18f2672fd3435396aaa898ddf4d1128375d7c93b91c59f87f
+            Ports:         80/TCP, 443/TCP
+            Host Ports:    0/TCP, 0/TCP
+            Args:
+              /nginx-ingress-controller
+              --configmap=$(POD_NAMESPACE)/nginx-configuration
+              --tcp-services-configmap=$(POD_NAMESPACE)/tcp-services
+              --udp-services-configmap=$(POD_NAMESPACE)/udp-services
+              --publish-service=$(POD_NAMESPACE)/ingress-nginx
+              --annotations-prefix=nginx.ingress.kubernetes.io
+            State:          Running
+              Started:      Mon, 24 Jun 2019 14:14:48 +0800
+            Ready:          True
+            Restart Count:  0
+            Liveness:       http-get http://:10254/healthz delay=10s timeout=10s period=10s #success=1 #failure=3
+            Readiness:      http-get http://:10254/healthz delay=0s timeout=10s period=10s #success=1 #failure=3
+            Environment:
+              POD_NAME:       nginx-ingress-controller-689498bc7c-rqfxj (v1:metadata.name)
+              POD_NAMESPACE:  ingress-nginx (v1:metadata.namespace)
+            Mounts:
+              /var/run/secrets/kubernetes.io/serviceaccount from nginx-ingress-serviceaccount-token-lcs8j (ro)
+        Conditions:
+          Type              Status
+          Initialized       True 
+          Ready             True 
+          ContainersReady   True 
+          PodScheduled      True 
+        Volumes:
+          nginx-ingress-serviceaccount-token-lcs8j:
+            Type:        Secret (a volume populated by a Secret)
+            SecretName:  nginx-ingress-serviceaccount-token-lcs8j
+            Optional:    false
+        QoS Class:       BestEffort
+        Node-Selectors:  <none>
+        Tolerations:     node.kubernetes.io/not-ready:NoExecute for 300s
+                         node.kubernetes.io/unreachable:NoExecute for 300s
+        Events:          <none>

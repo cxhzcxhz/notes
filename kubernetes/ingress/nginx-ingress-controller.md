@@ -2,7 +2,9 @@
 
     service资源只能实现4层代理（流量入口）。
     ingress资源可以实现4、7层代理（流量入口）。
-使用ingress资源，实现7层代理访问，大概分几步实现：（参考）
+使用ingress资源，实现7层代理访问，大概分几步实现：
+（图片：https://github.com/cxhzcxhz/notes/blob/master/kubernetes/ingress/images/ingress1.png
+       https://github.com/cxhzcxhz/notes/blob/master/kubernetes/ingress/images/ingress2.png）
 
     1、部署nginx ingress controller控制器。
     2、编写ingress类型的资源配置文件，定义使用基于主机名或url方式，提供前端访问入口（具体提供服务的虚拟主机配置文件）。

@@ -1,1 +1,2 @@
+ingress解析
 Ingress 是从Kubernetes集群外部访问集群内部服务的入口

@@ -191,7 +191,38 @@
       
 与我们在集群外部访问，得到的结果一致。     
 
+现在我们删除其中一个pod，命令；
+	
+	[root@docker1:~/mainfests/ingress ]# kubectl  delete pods/myapp-deploy-6b56d98b6b-qxbs8
+	pod "myapp-deploy-6b56d98b6b-qxbs8" deleted
+	deployment控制器会自动创建一个新的pods，如下所示，
+	[root@docker1:~/mainfests/ingress ]# kubectl  get pods
+	NAME                             READY   STATUS    RESTARTS   AGE
+	myapp-deploy-6b56d98b6b-8xm59    1/1     Running   0          5h11m
+	myapp-deploy-6b56d98b6b-qq9rr    1/1     Running   0          5h11m
+	myapp-deploy-6b56d98b6b-rp52d    1/1     Running   0          4s
+	
+	pods地址发生变化，service类型的资源myapp会立即生成相应的iptables或ipvs规则，并同时ingress类型资源ingress-myapp，ingress-myapp会立即将新的地址注入到nginx ingress controller pods中，并触发nginx ingress controller主进程重载，使用最新的配置文件。
+	
+集群外部访问http://myapp.magedu.com:30080/hostname.html
 
+原来的名称为myapp-deploy-6b56d98b6b-qxbs8没有了，最新的pods名称为myapp-deploy-6b56d98b6b-rp52d立即生效。
+
+查看系统中pods信息，命令；
+	
+	[root@docker1:~/mainfests/ingress ]# kubectl  get pods
+	NAME                             READY   STATUS    RESTARTS   AGE
+	myapp-deploy-6b56d98b6b-8xm59    1/1     Running   0          5h22m
+	myapp-deploy-6b56d98b6b-qq9rr    1/1     Running   0          5h22m
+	myapp-deploy-6b56d98b6b-rp52d    1/1     Running   0          10m
+
+
+访问结果如图：https://github.com/cxhzcxhz/notes/blob/master/kubernetes/ingress/images/myapp.magedu.com4.png
+
+集群中pods信息，与访问的结果一致，说明后端pods发生变化后，ingress会立即注入最新地址到ingress controller中。
+
+### pods发生变化后的触发流程：
+pods---变化后--->service---立即生成新的规则---通知给--->ingress---将最新的地址信息----注入到nginx ingress controller pods中，并触发---->nginx ingress controller pods主进程重载---->最新配置文件成效。
 
 #### 示例2，创建ingress类型资源ingress-tomcat配置文件，创建基于主机名“tomcat.magedu.com”的虚拟主机，并使用service类型资源ingress-nginx监听的30080端口，通过集群外部访问测试。
 

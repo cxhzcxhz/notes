@@ -19,25 +19,28 @@
       
 #####      BlockDevice：path指定的路径必须是个块设备。
 
+
 创建hostPath存储卷示例：
-   [root@docker1:~/mainfests/volumes ]# cat  pod-hostpath-vol.yaml 
-    apiVersion: v1
-    kind: Pod
-    metadata:
-       name: pod-vol-hostpath
-       namespace: default
-    spec:
-       containers:
-       - name: myapp
-         image: ikubernetes/myapp:v1
-         volumeMounts:
-         - name: html
-           mountPath: /usr/share/nginx/html/
-       volumes:
-       - name: html
-         hostPath: 
-            path: /data/pod/volume1
-            type: Directory 
+
+
+           [root@docker1:~/mainfests/volumes ]# cat  pod-hostpath-vol.yaml 
+            apiVersion: v1
+            kind: Pod
+            metadata:
+               name: pod-vol-hostpath
+               namespace: default
+            spec:
+               containers:
+               - name: myapp
+                 image: ikubernetes/myapp:v1
+                 volumeMounts:
+                 - name: html
+                   mountPath: /usr/share/nginx/html/
+               volumes:
+               - name: html
+                 hostPath: 
+                    path: /data/pod/volume1
+                    type: Directory 
  
 在node节点docker2、docker3上，提前准备好宿主机目录路径，并创建index.html文件。
 
